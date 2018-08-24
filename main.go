@@ -16,27 +16,27 @@ func doEvery(d time.Duration, f func()) {
 }
 
 func main() {
-	doEvery(300000*time.Millisecond, UnfollowAUserNotFollowingMe)
+	doEvery(600*time.Second, UnfollowAUserNotFollowingMe)
 }
 
 func UnfollowAUserNotFollowingMe() {
 	client := getTwitterClient()
-	friends, _, err := client.Friends.List(&twitter.FriendListParams{})
+	friends, _, err := client.Friends.List(&twitter.FriendListParams{Count: 1000})
 	users := friends.Users
 	if err != nil {
 		panic(err)
 	}
-	for _, user := range users {
-		relationship, _, err := client.Friendships.Show(&twitter.FriendshipShowParams{TargetID: user.ID})
-		if err != nil {
-			panic(err)
-		}
-		if !relationship.Target.Following {
-			fmt.Println("Unfollowing: ", relationship.Target)
-			client.Friendships.Destroy(&twitter.FriendshipDestroyParams{UserID: user.ID})
-			break
-		}
+	user := users[len(users)-1:][0]
+	//for _, user := range users {
+	relationship, _, err := client.Friendships.Show(&twitter.FriendshipShowParams{TargetID: user.ID})
+	if err != nil {
+		panic(err)
 	}
+	if !relationship.Target.Following {
+		fmt.Println("Unfollowing: ", relationship.Target)
+		client.Friendships.Destroy(&twitter.FriendshipDestroyParams{UserID: user.ID})
+	}
+	//}
 
 }
 
